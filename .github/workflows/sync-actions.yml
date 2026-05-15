@@ -189,7 +189,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           path: gh-aw-actions
 
-      - name: Checkout gh-aw at resolved ref (actions/ only)
+      - name: Checkout gh-aw at resolved ref (actions/ + .github/aw/)
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           repository: github/gh-aw
@@ -197,7 +197,9 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           path: gh-aw
           persist-credentials: false
-          sparse-checkout: actions
+          sparse-checkout: |
+            actions
+            .github/aw
           sparse-checkout-cone-mode: true
 
       - name: Log source actions directory
@@ -245,6 +247,33 @@ jobs:
 
           echo "::endgroup::"
 
+      - name: Sync compatibility matrix files
+        env:
+          RESOLVED_REF: ${{ steps.resolve-ref.outputs.resolved_ref }}
+        run: |
+          echo "::group::Syncing .github/aw/ compatibility matrix files from gh-aw"
+          # The agent compatibility matrix lives at gh-aw/.github/aw/ as the source of
+          # truth, alongside other fleet-wide config like releases.json. Only the matrix
+          # files are synced; the rest of gh-aw/.github/aw/ contains gh-aw's own workflow
+          # definitions which are not relevant to gh-aw-actions.
+          mkdir -p gh-aw-actions/.github/aw
+          # Remove first so that upstream deletion is reflected here (remote wins).
+          rm -f gh-aw-actions/.github/aw/compat.json gh-aw-actions/.github/aw/compat.schema.json
+          synced=0
+          for f in compat.json compat.schema.json; do
+            src="gh-aw/.github/aw/$f"
+            dst="gh-aw-actions/.github/aw/$f"
+            if [ -f "$src" ]; then
+              cp "$src" "$dst"
+              echo "Synced: $src -> $dst"
+              synced=$((synced + 1))
+            else
+              echo "::warning::$src not present at ref '$RESOLVED_REF'; not syncing $f"
+            fi
+          done
+          echo "Synced $synced compatibility matrix file(s)."
+          echo "::endgroup::"
+
       - name: Log destination after sync
         run: |
           echo "::group::Destination — gh-aw-actions/ (action folders) after sync"
@@ -253,6 +282,9 @@ jobs:
             echo "--- $name/ ---"
             find "gh-aw-actions/$name" -type f | sort
           done
+          echo "::endgroup::"
+          echo "::group::Destination — gh-aw-actions/.github/aw/ after sync"
+          find gh-aw-actions/.github/aw -maxdepth 1 -type f -name 'compat*' | sort || echo "(no compat files)"
           echo "::endgroup::"
 
       - name: Create branch, commit, and open pull request
@@ -268,6 +300,10 @@ jobs:
             name=$(basename "$dir")
             git add -A "$name/"
           done
+
+          # Stage the synced compatibility matrix files (see "Sync compatibility matrix files" step).
+          # Use -A so that upstream deletions are reflected here as well.
+          git add -A .github/aw/compat.json .github/aw/compat.schema.json
 
           if git diff --staged --quiet; then
             echo "No changes detected — nothing to commit."
