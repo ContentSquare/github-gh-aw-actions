@@ -302,8 +302,14 @@ jobs:
           done
 
           # Stage the synced compatibility matrix files (see "Sync compatibility matrix files" step).
-          # Use -A so that upstream deletions are reflected here as well.
-          git add -A .github/aw/compat.json .github/aw/compat.schema.json
+          # Guard each path so we never invoke `git add` on a non-existent + untracked file
+          # (which would fail with "pathspec did not match any files" during the dormant period
+          # before upstream lands the files). `git add -A` on a tracked path also stages deletions.
+          for f in .github/aw/compat.json .github/aw/compat.schema.json; do
+            if [ -f "$f" ] || git ls-files --error-unmatch "$f" >/dev/null 2>&1; then
+              git add -A "$f"
+            fi
+          done
 
           if git diff --staged --quiet; then
             echo "No changes detected — nothing to commit."
