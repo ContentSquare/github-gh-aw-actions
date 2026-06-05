@@ -76,11 +76,29 @@ jobs:
             }
             core.info(`✅ ${CONFIG_FILE} is valid JSON`);
 
+            let schema;
+            try {
+              schema = JSON.parse(fs.readFileSync(SCHEMA_FILE, 'utf8'));
+            } catch (err) {
+              core.setFailed(`ERROR: ${SCHEMA_FILE} is not valid JSON: ${err.message}`);
+              return;
+            }
+
             const errors = [];
-            const allowedTopKeys = new Set(['$schema', 'agent-compat-v1']);
+            const allowedTopKeys = new Set(
+              schema && schema.properties && typeof schema.properties === 'object'
+                ? Object.keys(schema.properties)
+                : ['$schema', 'agent-compat-v1']
+            );
             for (const key of Object.keys(config)) {
               if (!allowedTopKeys.has(key)) {
                 errors.push(`Unknown top-level property: '${key}'`);
+              }
+            }
+            const requiredTopKeys = Array.isArray(schema?.required) ? schema.required : ['agent-compat-v1'];
+            for (const key of requiredTopKeys) {
+              if (!(key in config)) {
+                errors.push(`Missing required top-level property: '${key}'`);
               }
             }
 
