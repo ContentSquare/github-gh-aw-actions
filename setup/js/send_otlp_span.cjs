@@ -9,6 +9,8 @@ const path = require("path");
 const { nowMs } = require("./performance_now.cjs");
 const { buildWorkflowRunUrl } = require("./workflow_metadata_helpers.cjs");
 const { readExperimentAssignments, EXPERIMENT_ASSIGNMENTS_PATH } = require("./experiment_helpers.cjs");
+const { parseJsonlContent } = require("./jsonl_helpers.cjs");
+const { countSteeringEventsInApiProxyJsonl } = require("./steering_helpers.cjs");
 
 /**
  * send_otlp_span.cjs
@@ -1390,6 +1392,13 @@ const OTLP_EXPORT_ERROR_DETAILS_PATH = "/tmp/gh-aw/otlp-export-errors.jsonl";
  * @type {string}
  */
 const AGENT_STDIO_LOG_PATH = "/tmp/gh-aw/agent-stdio.log";
+const API_PROXY_EVENT_LOG_PATHS = [
+  "/tmp/gh-aw/sandbox/firewall/logs/api-proxy-logs/event-logs.jsonl",
+  "/tmp/gh-aw/sandbox/firewall/logs/api-proxy-logs/events.jsonl",
+  "/tmp/gh-aw/sandbox/firewall-audit-logs/api-proxy-logs/event-logs.jsonl",
+  "/tmp/gh-aw/sandbox/firewall-audit-logs/api-proxy-logs/events.jsonl",
+];
+const PERMISSION_DENIED_RE = /\b(?:permissions?\s+denied(?!\s+counts?\b)|EACCES|EPERM)\b/i;
 
 /**
  * @typedef {Object} RateLimitEntry
@@ -1412,9 +1421,12 @@ const AGENT_STDIO_LOG_PATH = "/tmp/gh-aw/agent-stdio.log";
 function readLastRateLimitEntry() {
   try {
     const content = fs.readFileSync(GITHUB_RATE_LIMITS_JSONL_PATH, "utf8");
-    const lines = content.split("\n").filter(l => l.trim() !== "");
-    if (lines.length === 0) return null;
-    return JSON.parse(lines[lines.length - 1]);
+    const entries = parseJsonlContent(content);
+    if (entries.length === 0) return null;
+    const last = entries[entries.length - 1];
+    // Rate-limit enrichment requires object entries (not primitive values or
+    // arrays) so the expected fields can be extracted as attributes.
+    return last && typeof last === "object" && !Array.isArray(last) ? last : null;
   } catch {
     return null;
   }
@@ -1492,18 +1504,9 @@ function readOTLPExportErrorDetails() {
     const content = fs.readFileSync(OTLP_EXPORT_ERROR_DETAILS_PATH, "utf8");
     /** @type {OTLPExportErrorDetail[]} */
     const details = [];
-    for (const rawLine of content.split("\n")) {
-      const line = rawLine.trim();
-      if (!line) {
-        continue;
-      }
-      try {
-        const parsed = JSON.parse(line);
-        if (isValidOTLPExportErrorDetail(parsed)) {
-          details.push(normalizeOTLPExportErrorDetail(parsed));
-        }
-      } catch {
-        // Ignore malformed and partially written JSONL lines.
+    for (const parsed of parseJsonlContent(content)) {
+      if (isValidOTLPExportErrorDetail(parsed)) {
+        details.push(normalizeOTLPExportErrorDetail(parsed));
       }
     }
     return details;
@@ -1625,60 +1628,98 @@ function getErrorMessage(errorEntry) {
  * @property {number | undefined} turns
  * @property {string | undefined} stopReason
  * @property {string | undefined} resolvedModel
- * @property {{input_tokens?: number, output_tokens?: number, cache_read_tokens?: number, cache_write_tokens?: number} | undefined} tokenUsage
+ * @property {{input_tokens?: number, output_tokens?: number, cache_read_tokens?: number, cache_write_tokens?: number, ai_credits?: number} | undefined} tokenUsage
  * @property {number} warningCount
+ * @property {number} permissionDeniedCount
+ * @property {number} steeringEventCount
  */
+
+/**
+ * Normalize a non-negative numeric counter or cost value.
+ *
+ * @param {unknown} rawValue
+ * @returns {number | undefined}
+ */
+function normalizeNonNegativeNumber(rawValue) {
+  if (typeof rawValue === "number" && Number.isFinite(rawValue) && rawValue >= 0) {
+    return rawValue;
+  }
+  if (typeof rawValue === "string" && rawValue.trim()) {
+    const parsed = Number(rawValue.trim());
+    if (Number.isFinite(parsed) && parsed >= 0) {
+      return parsed;
+    }
+  }
+  return undefined;
+}
 
 /**
  * Normalize token usage counters from an engine result event usage block.
  *
  * @param {unknown} rawUsage
- * @returns {{input_tokens?: number, output_tokens?: number, cache_read_tokens?: number, cache_write_tokens?: number} | undefined}
+ * @returns {{input_tokens?: number, output_tokens?: number, cache_read_tokens?: number, cache_write_tokens?: number, ai_credits?: number} | undefined}
  */
 function normalizeRuntimeTokenUsage(rawUsage) {
   if (!rawUsage || typeof rawUsage !== "object" || Array.isArray(rawUsage)) {
     return undefined;
   }
 
-  /** @type {{input_tokens?: number, output_tokens?: number, cache_read_tokens?: number, cache_write_tokens?: number, cache_read_input_tokens?: number, cache_creation_input_tokens?: number}} */
+  /** @type {{input_tokens?: number, output_tokens?: number, cache_read_tokens?: number, cache_write_tokens?: number, cache_read_input_tokens?: number, cache_creation_input_tokens?: number, ai_credits?: number}} */
   const usage = rawUsage;
-  /** @type {{input_tokens?: number, output_tokens?: number, cache_read_tokens?: number, cache_write_tokens?: number}} */
+  /** @type {{input_tokens?: number, output_tokens?: number, cache_read_tokens?: number, cache_write_tokens?: number, ai_credits?: number}} */
   const normalized = {};
 
-  const normalizeTokenCounter = rawValue => {
-    if (typeof rawValue === "number" && Number.isFinite(rawValue) && rawValue >= 0) {
-      return rawValue;
-    }
-    if (typeof rawValue === "string" && rawValue.trim()) {
-      const trimmed = rawValue.trim();
-      const parsed = Number(trimmed);
-      if (Number.isFinite(parsed) && parsed >= 0) {
-        return parsed;
-      }
-    }
-    return undefined;
-  };
-
-  const inputTokens = normalizeTokenCounter(usage.input_tokens);
+  const inputTokens = normalizeNonNegativeNumber(usage.input_tokens);
   if (typeof inputTokens === "number") {
     normalized.input_tokens = inputTokens;
   }
-  const outputTokens = normalizeTokenCounter(usage.output_tokens);
+  const outputTokens = normalizeNonNegativeNumber(usage.output_tokens);
   if (typeof outputTokens === "number") {
     normalized.output_tokens = outputTokens;
   }
 
-  const cacheReadTokens = normalizeTokenCounter(usage.cache_read_tokens) ?? normalizeTokenCounter(usage.cache_read_input_tokens);
+  const cacheReadTokens = normalizeNonNegativeNumber(usage.cache_read_tokens) ?? normalizeNonNegativeNumber(usage.cache_read_input_tokens);
   if (typeof cacheReadTokens === "number") {
     normalized.cache_read_tokens = cacheReadTokens;
   }
 
-  const cacheWriteTokens = normalizeTokenCounter(usage.cache_write_tokens) ?? normalizeTokenCounter(usage.cache_creation_input_tokens);
+  const cacheWriteTokens = normalizeNonNegativeNumber(usage.cache_write_tokens) ?? normalizeNonNegativeNumber(usage.cache_creation_input_tokens);
   if (typeof cacheWriteTokens === "number") {
     normalized.cache_write_tokens = cacheWriteTokens;
   }
 
+  const aiCredits = normalizeNonNegativeNumber(usage.ai_credits);
+  if (typeof aiCredits === "number") {
+    normalized.ai_credits = aiCredits;
+  }
+
   return Object.keys(normalized).length > 0 ? normalized : undefined;
+}
+
+/**
+ * Read steering-event count from the first available API proxy event-log JSONL.
+ *
+ * Uses first-available-wins semantics: the first non-empty file encountered is
+ * the single source of truth for this run. Multiple paths cover runtime vs
+ * audit sandbox layouts. If the file exists but has no steering events, 0 is
+ * returned without checking later paths.
+ *
+ * @returns {number}
+ */
+function readApiProxySteeringEventCount() {
+  for (const filePath of API_PROXY_EVENT_LOG_PATHS) {
+    try {
+      const stat = fs.statSync(filePath);
+      if (!stat || stat.size <= 0) {
+        continue;
+      }
+      const content = fs.readFileSync(filePath, "utf8");
+      return countSteeringEventsInApiProxyJsonl(content);
+    } catch {
+      // Ignore missing/unreadable files and fall through to the next path.
+    }
+  }
+  return 0;
 }
 
 /**
@@ -1688,7 +1729,9 @@ function normalizeRuntimeTokenUsage(rawUsage) {
  */
 function readAgentRuntimeMetrics() {
   /** @type {AgentRuntimeMetrics} */
-  const metrics = { turns: undefined, stopReason: undefined, resolvedModel: undefined, tokenUsage: undefined, warningCount: 0 };
+  const metrics = { turns: undefined, stopReason: undefined, resolvedModel: undefined, tokenUsage: undefined, warningCount: 0, permissionDeniedCount: 0, steeringEventCount: readApiProxySteeringEventCount() };
+  let fallbackPermissionDeniedCount = 0;
+  let hasStructuredPermissionDeniedCount = false;
 
   try {
     const content = fs.readFileSync(AGENT_STDIO_LOG_PATH, "utf8");
@@ -1722,6 +1765,13 @@ function readAgentRuntimeMetrics() {
       if (tokenUsage) {
         metrics.tokenUsage = tokenUsage;
       }
+      if (Array.isArray(parsed.permission_denials)) {
+        metrics.permissionDeniedCount = Math.max(metrics.permissionDeniedCount, parsed.permission_denials.length);
+        hasStructuredPermissionDeniedCount = true;
+      } else if (typeof parsed.permission_denied_count === "number" && Number.isFinite(parsed.permission_denied_count) && parsed.permission_denied_count >= 0) {
+        metrics.permissionDeniedCount = Math.max(metrics.permissionDeniedCount, parsed.permission_denied_count);
+        hasStructuredPermissionDeniedCount = true;
+      }
     };
 
     for (const rawLine of lines) {
@@ -1732,6 +1782,9 @@ function readAgentRuntimeMetrics() {
 
       if (/^(?:\[WARN\]|npm warn\b)/i.test(line)) {
         metrics.warningCount += 1;
+      }
+      if (PERMISSION_DENIED_RE.test(line)) {
+        fallbackPermissionDeniedCount += 1;
       }
 
       const jsonObjectStart = line.indexOf("{");
@@ -1763,6 +1816,10 @@ function readAgentRuntimeMetrics() {
     }
   } catch {
     return metrics;
+  }
+
+  if (!hasStructuredPermissionDeniedCount) {
+    metrics.permissionDeniedCount = fallbackPermissionDeniedCount;
   }
 
   return metrics;
@@ -1898,6 +1955,8 @@ async function sendJobConclusionSpan(spanName, options = {}) {
   const detectionConclusion = process.env.GH_AW_DETECTION_CONCLUSION || "";
   const detectionReason = process.env.GH_AW_DETECTION_REASON || "";
   const runtimeMetrics = readAgentRuntimeMetrics();
+  // Read once and reuse for both gh-aw.aic and gen_ai.usage.* attributes.
+  const agentUsage = normalizeRuntimeTokenUsage(readJSONIfExists("/tmp/gh-aw/agent_usage.json")) || runtimeMetrics.tokenUsage || {};
 
   // Mark the span as an error when the agent job failed, timed out, or was cancelled.
   const isAgentTimedOut = agentConclusion === "timed_out";
@@ -1960,6 +2019,8 @@ async function sendJobConclusionSpan(spanName, options = {}) {
   attributes.push(buildAttr("gh-aw.run.status", runStatus));
   attributes.push(buildAttr("gh-aw.error_count", outputErrors.length));
   attributes.push(buildAttr("gh-aw.warning_count", warningCount));
+  attributes.push(buildAttr("gh-aw.permission_denied_count", runtimeMetrics.permissionDeniedCount));
+  attributes.push(buildAttr("gh-aw.steering_event_count", runtimeMetrics.steeringEventCount));
   attributes.push(buildAttr("gh-aw.action_minutes", Math.max(0, endMs - startMs) / 60000));
 
   if (jobName) attributes.push(buildAttr("gh-aw.job.name", jobName));
@@ -1992,6 +2053,10 @@ async function sendJobConclusionSpan(spanName, options = {}) {
   attributes.push(...buildEpisodeAttributesFromContext(awInfo, runId, runAttempt));
   if (!isNaN(effectiveTokens) && effectiveTokens > 0) {
     attributes.push(buildAttr("gh-aw.effective_tokens", effectiveTokens));
+  }
+  const aiCredits = typeof agentUsage.ai_credits === "number" ? agentUsage.ai_credits : normalizeNonNegativeNumber(process.env.GH_AW_AIC);
+  if (typeof aiCredits === "number" && aiCredits > 0) {
+    attributes.push(buildAttr("gh-aw.aic", aiCredits));
   }
   if (typeof runtimeMetrics.turns === "number") {
     attributes.push(buildAttr("gh-aw.turns", runtimeMetrics.turns));
@@ -2177,7 +2242,6 @@ async function sendJobConclusionSpan(spanName, options = {}) {
   // to avoid double-counting in backends that sum gen_ai.usage.* across all spans.
   // When no agent span is emitted the attributes fall through to the conclusion span
   // so a single query is still sufficient for observability.
-  const agentUsage = normalizeRuntimeTokenUsage(readJSONIfExists("/tmp/gh-aw/agent_usage.json")) || runtimeMetrics.tokenUsage || {};
   const usageAttrs = [];
   if (typeof agentUsage.input_tokens === "number" && agentUsage.input_tokens > 0) {
     usageAttrs.push(buildAttr("gen_ai.usage.input_tokens", agentUsage.input_tokens));
