@@ -256,6 +256,8 @@ jobs:
           # truth, alongside other fleet-wide config like releases.json. Only the matrix
           # files are synced; the rest of gh-aw/.github/aw/ contains gh-aw's own workflow
           # definitions which are not relevant to gh-aw-actions.
+          # Model data files are synced through actions/setup/js/ during the action folder
+          # rsync step, not from .github/aw/.
           mkdir -p gh-aw-actions/.github/aw
           # Remove first so that upstream deletion is reflected here (remote wins).
           rm -f \
