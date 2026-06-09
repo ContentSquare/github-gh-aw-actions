@@ -260,11 +260,9 @@ jobs:
           # Remove first so that upstream deletion is reflected here (remote wins).
           rm -f \
             gh-aw-actions/.github/aw/compat.json \
-            gh-aw-actions/.github/aw/compat.schema.json \
-            gh-aw-actions/.github/aw/models.json \
-            gh-aw-actions/.github/aw/model-multipliers.json
+            gh-aw-actions/.github/aw/compat.schema.json
           synced=0
-          for f in compat.json compat.schema.json models.json model-multipliers.json; do
+          for f in compat.json compat.schema.json; do
             src="gh-aw/.github/aw/$f"
             dst="gh-aw-actions/.github/aw/$f"
             if [ -f "$src" ]; then
@@ -288,7 +286,7 @@ jobs:
           done
           echo "::endgroup::"
           echo "::group::Destination — gh-aw-actions/.github/aw/ after sync"
-          matrix_files=$(find gh-aw-actions/.github/aw -maxdepth 1 -type f \( -name 'compat*' -o -name 'models.json' -o -name 'model-multipliers.json' \) | sort)
+          matrix_files=$(find gh-aw-actions/.github/aw -maxdepth 1 -type f -name 'compat*' | sort)
           if [ -n "$matrix_files" ]; then
             printf '%s\n' "$matrix_files"
           else
@@ -312,9 +310,9 @@ jobs:
 
           # Stage the synced compatibility matrix files (see "Sync compatibility matrix files" step).
           # Guard each path so we never invoke `git add` on a non-existent + untracked file
-          # (which would fail with "pathspec did not match any files" during the dormant period
-          # before upstream lands the files). `git add -A` on a tracked path also stages deletions.
-          for f in .github/aw/compat.json .github/aw/compat.schema.json .github/aw/models.json .github/aw/model-multipliers.json; do
+          # (which would fail with "pathspec did not match any files"). `git add -A` on a
+          # tracked path also stages deletions.
+          for f in .github/aw/compat.json .github/aw/compat.schema.json; do
             if [ -f "$f" ] || git ls-files --error-unmatch "$f" >/dev/null 2>&1; then
               git add -A "$f"
             fi
