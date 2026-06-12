@@ -7,12 +7,11 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+  copilot-requests: write
   issues: read
 tracker-id: runtime-threat-scan
 engine: copilot
 strict: true
-features:
-  copilot-requests: true
 tools:
   bash: true
   cache-memory:
