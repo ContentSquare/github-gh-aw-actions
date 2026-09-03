@@ -1,6 +1,6 @@
 // @ts-check
-console.log("::debug::Running gh-aw script: parse_token_usage.cjs");
 /// <reference types="@actions/github-script" />
+console.log("::debug::Running gh-aw script: parse_token_usage.cjs");
 
 const fs = require("fs");
 const { getErrorMessage } = require("./error_helpers.cjs");

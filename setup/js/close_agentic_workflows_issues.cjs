@@ -1,6 +1,6 @@
 // @ts-check
-console.log("::debug::Running gh-aw script: close_agentic_workflows_issues.cjs");
 /// <reference types="@actions/github-script" />
+console.log("::debug::Running gh-aw script: close_agentic_workflows_issues.cjs");
 
 const { resolveExecutionOwnerRepo } = require("./repo_helpers.cjs");
 const { sanitizeContent } = require("./sanitize_content.cjs");

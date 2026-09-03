@@ -1,6 +1,6 @@
 // @ts-check
-console.log("::debug::Running gh-aw script: create_labels.cjs");
 /// <reference types="@actions/github-script" />
+console.log("::debug::Running gh-aw script: create_labels.cjs");
 
 const { getErrorMessage } = require("./error_helpers.cjs");
 const { ERR_SYSTEM } = require("./error_codes.cjs");

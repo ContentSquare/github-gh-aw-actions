@@ -1,6 +1,6 @@
 // @ts-check
-console.log("::debug::Running gh-aw script: handle_agent_failure.cjs");
 /// <reference types="@actions/github-script" />
+console.log("::debug::Running gh-aw script: handle_agent_failure.cjs");
 
 const { getErrorMessage } = require("./error_helpers.cjs");
 const { sanitizeContent } = require("./sanitize_content.cjs");

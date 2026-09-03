@@ -1,6 +1,6 @@
 // @ts-check
-console.log("::debug::Running gh-aw script: close_expired_pull_requests.cjs");
 // <reference types="@actions/github-script" />
+console.log("::debug::Running gh-aw script: close_expired_pull_requests.cjs");
 
 const { executeExpiredEntityCleanup } = require("./expired_entity_main_flow.cjs");
 const { addIssueThreadComment, closePullRequest, createExpiredEntityHandler } = require("./expired_entity_handler_factory.cjs");

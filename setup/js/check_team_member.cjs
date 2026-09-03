@@ -1,6 +1,6 @@
 // @ts-check
-console.log("::debug::Running gh-aw script: check_team_member.cjs");
 /// <reference types="@actions/github-script" />
+console.log("::debug::Running gh-aw script: check_team_member.cjs");
 
 /**
  * Check if user has admin or maintainer permissions

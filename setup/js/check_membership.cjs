@@ -1,6 +1,6 @@
 // @ts-check
-console.log("::debug::Running gh-aw script: check_membership.cjs");
 /// <reference types="@actions/github-script" />
+console.log("::debug::Running gh-aw script: check_membership.cjs");
 
 const { parseRequiredPermissions, parseAllowedBots, checkRepositoryPermission, checkBotStatus, isAllowedBot, isConfusedDeputyAttack } = require("./check_permissions_utils.cjs");
 const { writeDenialSummary } = require("./pre_activation_summary.cjs");

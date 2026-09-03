@@ -1,6 +1,6 @@
 // @ts-check
-console.log("::debug::Running gh-aw script: collect_ndjson_output.cjs");
 /// <reference types="@actions/github-script" />
+console.log("::debug::Running gh-aw script: collect_ndjson_output.cjs");
 
 const { getErrorMessage } = require("./error_helpers.cjs");
 const { repairJson, sanitizePrototypePollution } = require("./json_repair_helpers.cjs");

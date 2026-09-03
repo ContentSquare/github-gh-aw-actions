@@ -1,6 +1,6 @@
 // @ts-check
-console.log("::debug::Running gh-aw script: generate_aw_info.cjs");
 /// <reference types="@actions/github-script" />
+console.log("::debug::Running gh-aw script: generate_aw_info.cjs");
 
 const fs = require("fs");
 const { TMP_GH_AW_PATH } = require("./constants.cjs");

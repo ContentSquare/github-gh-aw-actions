@@ -1,6 +1,6 @@
 // @ts-check
-console.log("::debug::Running gh-aw script: redact_secrets.cjs");
 /// <reference types="@actions/github-script" />
+console.log("::debug::Running gh-aw script: redact_secrets.cjs");
 
 /**
  * Redacts secrets from files in /tmp/gh-aw and ${RUNNER_TEMP}/gh-aw directories before uploading artifacts

@@ -1,6 +1,6 @@
 // @ts-check
-console.log("::debug::Running gh-aw script: update_pull_request_branches.cjs");
 /// <reference types="@actions/github-script" />
+console.log("::debug::Running gh-aw script: update_pull_request_branches.cjs");
 
 const { getErrorMessage } = require("./error_helpers.cjs");
 const { withRetry, isTransientError, sleep } = require("./error_recovery.cjs");

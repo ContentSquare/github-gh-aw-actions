@@ -1,6 +1,6 @@
 // @ts-check
-console.log("::debug::Running gh-aw script: close_expired_discussions.cjs");
 // <reference types="@actions/github-script" />
+console.log("::debug::Running gh-aw script: close_expired_discussions.cjs");
 
 const { executeExpiredEntityCleanup } = require("./expired_entity_main_flow.cjs");
 const { addDiscussionComment, closeDiscussionAsOutdated, createClosedRecord, createExpiredEntityHandler } = require("./expired_entity_handler_factory.cjs");

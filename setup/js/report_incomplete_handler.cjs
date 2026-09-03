@@ -1,6 +1,6 @@
 // @ts-check
-console.log("::debug::Running gh-aw script: report_incomplete_handler.cjs");
 /// <reference types="@actions/github-script" />
+console.log("::debug::Running gh-aw script: report_incomplete_handler.cjs");
 
 const { getErrorMessage } = require("./error_helpers.cjs");
 

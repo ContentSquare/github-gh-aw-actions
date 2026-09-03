@@ -1,6 +1,6 @@
 // @ts-check
-console.log("::debug::Running gh-aw script: check_workflow_timestamp_api.cjs");
 /// <reference types="@actions/github-script" />
+console.log("::debug::Running gh-aw script: check_workflow_timestamp_api.cjs");
 
 /**
  * Check for a stale workflow lock file using frontmatter hash comparison.

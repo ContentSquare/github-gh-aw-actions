@@ -1,6 +1,6 @@
 // @ts-check
-console.log("::debug::Running gh-aw script: handle_noop_message.cjs");
 /// <reference types="@actions/github-script" />
+console.log("::debug::Running gh-aw script: handle_noop_message.cjs");
 
 const fs = require("fs");
 const { getErrorMessage } = require("./error_helpers.cjs");

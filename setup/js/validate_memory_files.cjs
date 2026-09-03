@@ -1,6 +1,6 @@
 // @ts-check
-console.log("::debug::Running gh-aw script: validate_memory_files.cjs");
 /// <reference types="@actions/github-script" />
+console.log("::debug::Running gh-aw script: validate_memory_files.cjs");
 
 const fs = require("fs");
 const path = require("path");

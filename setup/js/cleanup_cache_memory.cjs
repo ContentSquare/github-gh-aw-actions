@@ -1,6 +1,6 @@
 // @ts-check
-console.log("::debug::Running gh-aw script: cleanup_cache_memory.cjs");
 /// <reference types="@actions/github-script" />
+console.log("::debug::Running gh-aw script: cleanup_cache_memory.cjs");
 
 const { getErrorMessage } = require("./error_helpers.cjs");
 const { delay } = require("./expired_entity_cleanup_helpers.cjs");

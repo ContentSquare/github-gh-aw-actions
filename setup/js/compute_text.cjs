@@ -1,6 +1,6 @@
 // @ts-check
-console.log("::debug::Running gh-aw script: compute_text.cjs");
 /// <reference types="@actions/github-script" />
+console.log("::debug::Running gh-aw script: compute_text.cjs");
 
 /**
  * Sanitizes content for safe output in GitHub Actions

@@ -1,6 +1,6 @@
 // @ts-check
-console.log("::debug::Running gh-aw script: setup_globals.cjs");
 /// <reference types="@actions/github-script" />
+console.log("::debug::Running gh-aw script: setup_globals.cjs");
 
 /**
  * setup_globals.cjs

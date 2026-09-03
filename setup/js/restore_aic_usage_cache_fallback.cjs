@@ -1,5 +1,4 @@
 // @ts-check
-console.log("::debug::Running gh-aw script: restore_aic_usage_cache_fallback.cjs");
 /// <reference types="@actions/github-script" />
 
 /**
@@ -22,6 +21,7 @@ console.log("::debug::Running gh-aw script: restore_aic_usage_cache_fallback.cjs
  */
 
 "use strict";
+console.log("::debug::Running gh-aw script: restore_aic_usage_cache_fallback.cjs");
 
 const fs = require("fs");
 const path = require("path");

@@ -1,6 +1,6 @@
 // @ts-check
-console.log("::debug::Running gh-aw script: check_version_updates.cjs");
 /// <reference types="@actions/github-script" />
+console.log("::debug::Running gh-aw script: check_version_updates.cjs");
 
 /**
  * Check compile-agentic version against the remote update configuration.

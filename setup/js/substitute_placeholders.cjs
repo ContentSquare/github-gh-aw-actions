@@ -1,6 +1,6 @@
 // @ts-check
-console.log("::debug::Running gh-aw script: substitute_placeholders.cjs");
 /// <reference types="@actions/github-script" />
+console.log("::debug::Running gh-aw script: substitute_placeholders.cjs");
 
 // Ensures global.core is available when running outside github-script context
 require("./shim.cjs");

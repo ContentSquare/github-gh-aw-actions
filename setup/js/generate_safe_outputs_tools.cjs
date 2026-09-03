@@ -1,7 +1,7 @@
 // @ts-check
-console.log("::debug::Running gh-aw script: generate_safe_outputs_tools.cjs");
 /// <reference types="@actions/github-script" />
 "use strict";
+console.log("::debug::Running gh-aw script: generate_safe_outputs_tools.cjs");
 require("./shim.cjs");
 // @safe-outputs-exempt SEC-004 — schema generator; does not process user body content. The substring "body:" appears only in the comment referencing the "allow-body" config option.
 

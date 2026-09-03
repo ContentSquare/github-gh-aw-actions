@@ -1,5 +1,4 @@
 // @ts-check
-console.log("::debug::Running gh-aw script: copilot_harness.cjs");
 
 /**
  * Copilot Harness with Retry Logic
@@ -44,6 +43,7 @@ console.log("::debug::Running gh-aw script: copilot_harness.cjs");
  */
 
 "use strict";
+console.log("::debug::Running gh-aw script: copilot_harness.cjs");
 
 require("./shim.cjs");
 

@@ -1,6 +1,6 @@
 // @ts-check
-console.log("::debug::Running gh-aw script: write_daily_aic_usage_cache.cjs");
 /// <reference types="@actions/github-script" />
+console.log("::debug::Running gh-aw script: write_daily_aic_usage_cache.cjs");
 
 /**
  * write_daily_aic_usage_cache.cjs

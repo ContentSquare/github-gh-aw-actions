@@ -1,6 +1,6 @@
 // @ts-check
-console.log("::debug::Running gh-aw script: interpolate_prompt.cjs");
 /// <reference types="@actions/github-script" />
+console.log("::debug::Running gh-aw script: interpolate_prompt.cjs");
 
 // @safe-outputs-exempt SEC-004 — no issue body is read or reflected; the only "body" occurrence is
 // a literal log string ("body") used to describe a template branch, not user-controlled content.

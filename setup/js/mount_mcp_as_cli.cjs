@@ -1,6 +1,6 @@
 // @ts-check
-console.log("::debug::Running gh-aw script: mount_mcp_as_cli.cjs");
 /// <reference types="@actions/github-script" />
+console.log("::debug::Running gh-aw script: mount_mcp_as_cli.cjs");
 
 /**
  * mount_mcp_as_cli.cjs

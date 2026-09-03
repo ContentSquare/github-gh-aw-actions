@@ -1,6 +1,6 @@
 // @ts-check
-console.log("::debug::Running gh-aw script: checkout_pr_branch.cjs");
 /// <reference types="@actions/github-script" />
+console.log("::debug::Running gh-aw script: checkout_pr_branch.cjs");
 
 /**
  * Checkout PR branch when PR context is available

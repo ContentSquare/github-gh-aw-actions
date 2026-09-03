@@ -1,6 +1,6 @@
 // @ts-check
-console.log("::debug::Running gh-aw script: run_validate_workflows.cjs");
 /// <reference types="@actions/github-script" />
+console.log("::debug::Running gh-aw script: run_validate_workflows.cjs");
 
 const { getErrorMessage } = require("./error_helpers.cjs");
 const { generateXMLMarker } = require("./messages_footer.cjs");

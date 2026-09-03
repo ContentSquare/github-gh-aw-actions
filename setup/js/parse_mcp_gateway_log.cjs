@@ -1,6 +1,6 @@
 // @ts-check
-console.log("::debug::Running gh-aw script: parse_mcp_gateway_log.cjs");
 /// <reference types="@actions/github-script" />
+console.log("::debug::Running gh-aw script: parse_mcp_gateway_log.cjs");
 
 const fs = require("fs");
 const { getErrorMessage } = require("./error_helpers.cjs");

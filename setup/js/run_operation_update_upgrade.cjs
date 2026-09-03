@@ -1,6 +1,6 @@
 // @ts-check
-console.log("::debug::Running gh-aw script: run_operation_update_upgrade.cjs");
 /// <reference types="@actions/github-script" />
+console.log("::debug::Running gh-aw script: run_operation_update_upgrade.cjs");
 // @safe-outputs-exempt SEC-004 — PR/issue body values in this handler are static internal templates (plus allowlisted changed-file paths), not untrusted user content.
 
 const { getErrorMessage } = require("./error_helpers.cjs");
