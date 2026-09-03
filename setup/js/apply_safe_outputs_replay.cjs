@@ -1,4 +1,5 @@
 // @ts-check
+console.log("::debug::Running gh-aw script: apply_safe_outputs_replay.cjs");
 /// <reference types="@actions/github-script" />
 
 /**

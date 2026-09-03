@@ -1,4 +1,5 @@
 // @ts-check
+console.log("::debug::Running gh-aw script: generate_aw_info.cjs");
 /// <reference types="@actions/github-script" />
 
 const fs = require("fs");

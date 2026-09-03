@@ -1,4 +1,5 @@
 // @ts-check
+console.log("::debug::Running gh-aw script: start_mcp_gateway.cjs");
 "use strict";
 
 // Ensures global.core is available when running outside github-script context

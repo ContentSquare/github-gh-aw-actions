@@ -1,4 +1,5 @@
 // @ts-check
+console.log("::debug::Running gh-aw script: missing_tool.cjs");
 /// <reference types="@actions/github-script" />
 
 const { getErrorMessage } = require("./error_helpers.cjs");

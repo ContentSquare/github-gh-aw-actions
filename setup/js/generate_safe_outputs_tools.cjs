@@ -1,4 +1,5 @@
 // @ts-check
+console.log("::debug::Running gh-aw script: generate_safe_outputs_tools.cjs");
 /// <reference types="@actions/github-script" />
 "use strict";
 require("./shim.cjs");

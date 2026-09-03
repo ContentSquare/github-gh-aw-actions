@@ -1,4 +1,5 @@
 // @ts-check
+console.log("::debug::Running gh-aw script: create_forecast_issue.cjs");
 // @safe-outputs-exempt SEC-004
 /// <reference types="@actions/github-script" />
 

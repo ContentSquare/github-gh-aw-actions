@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+console.log("::debug::Running gh-aw script: generate_usage_activity_summary.cjs");
 
 // This script aggregates usage activity data from various log sources and generates
 // a compact summary.json file for the usage artifact.

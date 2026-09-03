@@ -1,4 +1,5 @@
 // @ts-check
+console.log("::debug::Running gh-aw script: detect_agent_errors.cjs");
 
 /**
  * Detect agent engine errors in the agent stdio log and AWF firewall audit log.

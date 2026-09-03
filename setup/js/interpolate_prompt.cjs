@@ -1,4 +1,5 @@
 // @ts-check
+console.log("::debug::Running gh-aw script: interpolate_prompt.cjs");
 /// <reference types="@actions/github-script" />
 
 // @safe-outputs-exempt SEC-004 — no issue body is read or reflected; the only "body" occurrence is

@@ -1,4 +1,5 @@
 // @ts-check
+console.log("::debug::Running gh-aw script: restore_aic_usage_cache_fallback.cjs");
 /// <reference types="@actions/github-script" />
 
 /**

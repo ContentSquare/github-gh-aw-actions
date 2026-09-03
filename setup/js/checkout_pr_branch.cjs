@@ -1,4 +1,5 @@
 // @ts-check
+console.log("::debug::Running gh-aw script: checkout_pr_branch.cjs");
 /// <reference types="@actions/github-script" />
 
 /**

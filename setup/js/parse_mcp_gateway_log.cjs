@@ -1,4 +1,5 @@
 // @ts-check
+console.log("::debug::Running gh-aw script: parse_mcp_gateway_log.cjs");
 /// <reference types="@actions/github-script" />
 
 const fs = require("fs");

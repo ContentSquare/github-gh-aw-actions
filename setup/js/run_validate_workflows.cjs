@@ -1,4 +1,5 @@
 // @ts-check
+console.log("::debug::Running gh-aw script: run_validate_workflows.cjs");
 /// <reference types="@actions/github-script" />
 
 const { getErrorMessage } = require("./error_helpers.cjs");

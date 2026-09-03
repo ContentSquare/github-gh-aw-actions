@@ -1,4 +1,5 @@
 // @ts-check
+console.log("::debug::Running gh-aw script: patch_awf_chroot_config.cjs");
 
 const fs = require("fs");
 const os = require("os");

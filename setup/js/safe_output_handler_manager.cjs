@@ -1,4 +1,5 @@
 // @ts-check
+console.log("::debug::Running gh-aw script: safe_output_handler_manager.cjs");
 /// <reference types="@actions/github-script" />
 
 /**

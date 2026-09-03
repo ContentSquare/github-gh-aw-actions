@@ -1,4 +1,5 @@
 // @ts-check
+console.log("::debug::Running gh-aw script: check_daily_aic_workflow_guardrail.cjs");
 /// <reference types="@actions/github-script" />
 
 const fs = require("fs");

@@ -1,4 +1,5 @@
 // @ts-check
+console.log("::debug::Running gh-aw script: substitute_placeholders.cjs");
 /// <reference types="@actions/github-script" />
 
 // Ensures global.core is available when running outside github-script context

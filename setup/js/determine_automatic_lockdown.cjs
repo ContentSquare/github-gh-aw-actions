@@ -1,4 +1,5 @@
 // @ts-check
+console.log("::debug::Running gh-aw script: determine_automatic_lockdown.cjs");
 const { getErrorMessage } = require("./error_helpers.cjs");
 /// <reference types="@actions/github-script" />
 

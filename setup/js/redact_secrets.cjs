@@ -1,4 +1,5 @@
 // @ts-check
+console.log("::debug::Running gh-aw script: redact_secrets.cjs");
 /// <reference types="@actions/github-script" />
 
 /**
